@@ -55,16 +55,20 @@ const sortedTrains = (trains) => {
     return t3
 }
 const singleTrain= async({id,bearer})=>{
+    try{
     const res=await fetch(`http://20.244.56.144/train/trains/${id}`,{
         method:"GET",
         headers: {
             'Content-Type': 'application/json',
-            "Authorization": "Bearer " + bearer
+            "Authorization": "Bearer "+bearer
         }
 
     })
     const train=await res.json();
     return train
+} catch(error){
+    console.log(error)
+}
 
 }
 app.get('/', async (request,response)=>{
@@ -78,8 +82,8 @@ app.get('/', async (request,response)=>{
 })
 app.get('/train/:id',async (request,response)=>{
     const id=request.params.id;
-    const data = await initialfetch();
-    const {access_token}=data
+    const auth = await initialfetch();
+    const {access_token}=auth
     console.log(access_token)
     const oneTrain = await singleTrain({id,access_token});
     response.send(oneTrain);
