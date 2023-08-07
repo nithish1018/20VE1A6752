@@ -1,7 +1,9 @@
 const express =require('express');
 const app =express();
 const bodyParser = require("body-parser");
+const cors = require('cors')
 app.use(bodyParser.json());
+app.use(cors())
 app.use(express.urlencoded({ extended: false }));
 const myurl="http://20.244.56.144/train/auth" //API for authorization
 const myurl2="http://20.244.56.144/train/trains" //API to get trains data
@@ -32,7 +34,7 @@ const trainDetails= async(bearer)=>{
     })
     const trainData=await res.json();
     const data=filterTrains(trainData);
-    return trainData
+    return data
 
 
 }
@@ -54,13 +56,13 @@ const sortedTrains = (trains) => {
     const t3 = t2.sort((firstTrain, secondTrain) => new Date(0, 0, 0, firstTrain.departureTime.Hours, firstTrain.departureTime.Minutes + firstTrain.delayedBy, firstTrain.departureTime.Seconds, 0) - new Date(0, 0, 0, secondTrain.departureTime.Hours, secondTrain.departureTime.Minutes + secondTrain.delayedBy, secondTrain.departureTime.Seconds, 0));
     return t3
 }
-const singleTrain= async({id,bearer})=>{
+const singleTrain= async({token,id})=>{
     try{
     const res=await fetch(`http://20.244.56.144/train/trains/${id}`,{
         method:"GET",
         headers: {
             'Content-Type': 'application/json',
-            "Authorization": "Bearer "+bearer
+            "Authorization": "Bearer "+token
         }
 
     })
@@ -83,9 +85,9 @@ app.get('/', async (request,response)=>{
 app.get('/train/:id',async (request,response)=>{
     const id=request.params.id;
     const auth = await initialfetch();
-    const {access_token}=auth
-    console.log(access_token)
-    const oneTrain = await singleTrain({id,access_token});
+    const token=auth.access_token
+    console.log(token)
+    const oneTrain = await singleTrain({token,id});
     response.send(oneTrain);
 })
 app.listen(4000,()=>{
